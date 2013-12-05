@@ -106,7 +106,8 @@ if (exists($options{'tags'})) {
 # also, do the determination to open or close the event and
 # execute
 if ($options{'event'} eq 'host') {
-    if ($ENV{'NAGIOS_HOSTSTATE'} eq 'DOWN' && $ENV{'NAGIOS_NOTIFICATIONTYPE'} eq 'PROBLEM') {
+    if (($ENV{'NAGIOS_HOSTSTATE'} eq 'DOWN' || $ENV{'NAGIOS_HOSTSTATE'} eq 'UNREACHABLE')
+    		&& $ENV{'NAGIOS_NOTIFICATIONTYPE'} eq 'PROBLEM') {
         $ogArgs{'details'} = {'host' => $ENV{'NAGIOS_HOSTNAME'}};
         $ogArgs{'description'} = "***** Nagios *****
 
