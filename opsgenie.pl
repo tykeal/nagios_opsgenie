@@ -124,7 +124,7 @@ Date/Time: $ENV{'NAGIOS_LONGDATETIME'}
     }
 } else {
     $ogArgs{'alias'} = "$ogArgs{'alias'}_$ENV{'NAGIOS_SERVICEDESC'}";
-    if (($ENV{'NAGIOS_SERVICESTATE'} eq 'CRITICAL' || $ENV{'NAGIOS_SERVICESTATE'} eq 'WARN') &&
+    if (($ENV{'NAGIOS_SERVICESTATE'} eq 'CRITICAL' || $ENV{'NAGIOS_SERVICESTATE'} eq 'WARNING') &&
         $ENV{'NAGIOS_NOTIFICATIONTYPE'} eq 'PROBLEM') {
         $ogArgs{'details'} = {
                                 'host' => $ENV{'NAGIOS_HOSTNAME'},
