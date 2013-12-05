@@ -8,7 +8,7 @@ use strict;
 use LWP::UserAgent;
 use Getopt::Long;
 use Pod::Usage;
-use JSON;
+use JSON::XS;
 
 sub doAlertType($$)
 {

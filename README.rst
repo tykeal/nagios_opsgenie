@@ -23,9 +23,9 @@ integration kit.
 
 REQUIREMENTS
 ------------
-1. JSON_ used for data transport encodint to/from OpsGenie
+1. JSON::XS_ used for data transport encodint to/from OpsGenie
 
-.. _JSON: http://search.cpan.org/~makamaka/JSON-2.90/lib/JSON.pm
+.. _JSON::XS: http://search.cpan.org/~mlehmann/JSON-XS-3.01/XS.pm
 
 AUTHORS
 -------
