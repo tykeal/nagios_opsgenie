@@ -6,6 +6,7 @@
 
 use strict;
 use LWP::UserAgent;
+use MIME::Base64;
 use Getopt::Long;
 use Pod::Usage;
 use JSON::XS;
@@ -15,11 +16,17 @@ sub doAlertType($$)
     my ($requestURL, $json) = @_;
     my ($userAgent, $request, $response);
 
+    my $apikey = $::options{'apikey'};
+
     $userAgent = LWP::UserAgent->new;
     $userAgent->agent("OpsGenieScript/1.0");
     $userAgent->env_proxy();
 
     $request = HTTP::Request->new(POST => $requestURL);
+
+    $request->header('Authorization' => 'Basic ' . encode_base64($apikey));
+    $request->header('Content-Type'  => 'application/json');
+
     $request->content($json);
 
     $response = $userAgent->request($request);
@@ -40,7 +47,7 @@ sub createAlert(%)
     my %ogArgs = @_;
     my $json = encode_json \%ogArgs;
 
-    my $requestURL = 'https://api.opsgenie.com/v1/json/alert';
+    my $requestURL = 'https://api.opsgenie.com/v2/alerts';
     doAlertType($requestURL, $json);
 }
 
@@ -53,12 +60,12 @@ sub closeAlert(%)
     my %ogArgs = @_;
     my $json = encode_json \%ogArgs;
 
-    my $requestURL = 'https://api.opsgenie.com/v1/json/alert/close';
+    my $requestURL = 'https://api.opsgenie.com/v2/alerts/' . $ogArgs{'alias'} . '/close?identifierType=alias';
     doAlertType($requestURL, $json);
 }
 
 # Grab our options
-my %options = ();
+our %options = ();
 GetOptions(\%options, 'apikey=s', 'apikeyfile=s', 'application=s',
             'event=s', 'notification=s', 'priority=i',
             'recipients=s', 'tags=s', 'noautoclose', 'help|?') or pod2usage(2);
@@ -87,20 +94,32 @@ if (!exists($options{'apikey'}) && !exists($options{'apikeyfile'})) {
 # chomp the apikey in case it came in via STDIN or file
 chomp $options{'apikey'};
 
+# array of tags
+my @tags = ("priority=" . $options{'priority'});
+
+if (exists($options{'tags'})) {
+    push @tags, split(',', $options{'tags'});
+}
+
+# array of recipients
+my @recipients;
+
+for my $responder (split(',', $options{'recipients'})) {
+    push @recipients, {
+        "name"   => $responder,
+        "type" => "team"
+    }
+}
+
 # Setup our args block
 my %ogArgs = (
-        'customerKey' => $options{'apikey'},
         'entity' => $options{'event'},
-        'recipients' => $options{'recipients'},
+        'responders' => \@recipients,
         'alias' => $ENV{'NAGIOS_HOSTNAME'},
         'source' => $options{'application'},
         'message' => $options{'notification'},
-        'tags' => "priority=$options{'priority'}",
+        'tags' => \@tags
     );
-
-if (exists($options{'tags'})) {
-    $ogArgs{'tags'} = "$ogArgs{'tags'},$options{'tags'}",
-}
 
 # Add additional information if this is a host event or service
 # also, do the determination to open or close the event and
